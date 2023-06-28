@@ -103,12 +103,14 @@ func (c *client) request(method string, uri string, data interface{}, resp inter
 
 		if res.Response.StatusCode == nethttp.StatusOK {
 			if resp == nil || reflect.ValueOf(resp).IsNil() {
+				_ = res.Close()
 				return nil
 			}
 			return res.Scan(resp)
 		}
 
 		if res.Response.StatusCode == nethttp.StatusUnauthorized {
+			_ = res.Close()
 			if c.opts.unauthorizedHandler != nil && i < 1 {
 				if err = c.opts.unauthorizedHandler(c); err != nil {
 					return err
