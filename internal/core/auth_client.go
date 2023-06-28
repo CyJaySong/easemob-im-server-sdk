@@ -42,7 +42,7 @@ func NewAuthClient(opts *Options) Client {
 				req.TTL = defaultTokenTTL
 			}
 
-			if err := c.Post(defaultAuthUri, req, nil, resp); err != nil {
+			if err := c.Post(defaultAuthUri, req, resp); err != nil {
 				return nil, err
 			}
 
