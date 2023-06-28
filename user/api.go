@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dobyte/easemob-im-server-sdk/internal/core"
-	"github.com/dobyte/easemob-im-server-sdk/internal/core/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -307,7 +306,7 @@ func (a *api) RegisterUsers(users ...User) ([]*Entity, error) {
 
 	resp := &registerUsersResp{}
 
-	if err := a.client.Post(registerUsersUri, users, resp); err != nil {
+	if err := a.client.Post(registerUsersUri, users, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -317,7 +316,7 @@ func (a *api) RegisterUsers(users ...User) ([]*Entity, error) {
 // GetUser 获取单个用户
 func (a *api) GetUser(username string) (*Entity, error) {
 	resp := &getResp{}
-	if err := a.client.Get(fmt.Sprintf(getUserUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getUserUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -327,7 +326,7 @@ func (a *api) GetUser(username string) (*Entity, error) {
 // FetchUsers 批量获取用户详情
 func (a *api) FetchUsers(arg FetchUserArg) (*FetchUsersRet, error) {
 	resp := &fetchUsersResp{}
-	if err := a.client.Get(fetchUsersUri, arg, resp); err != nil {
+	if err := a.client.Get(fetchUsersUri, arg, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -349,13 +348,13 @@ func (a *api) FetchUsers(arg FetchUserArg) (*FetchUsersRet, error) {
 
 // DeleteUser 删除单个用户
 func (a *api) DeleteUser(username string) error {
-	return a.client.Delete(fmt.Sprintf(deleteUserUri, username), nil, nil)
+	return a.client.Delete(fmt.Sprintf(deleteUserUri, username), nil, nil, nil)
 }
 
 // DeleteUsers 批量删除用户
 func (a *api) DeleteUsers(limit int) ([]*Entity, error) {
 	resp := &deleteUsersResp{}
-	if err := a.client.Delete(fmt.Sprintf(deleteUsersUri, limit), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(deleteUsersUri, limit), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -379,13 +378,13 @@ func (a *api) DeleteAllUsers() ([]*Entity, error) {
 // UpdatePassword 修改用户密码
 func (a *api) UpdatePassword(username, password string) error {
 	req := &updatePasswordReq{NewPassword: password}
-	return a.client.Put(fmt.Sprintf(updatePasswordUri, username), req, nil)
+	return a.client.Put(fmt.Sprintf(updatePasswordUri, username), req, nil, nil)
 }
 
 // GetOnlineStatus 获取单个用户在线状态
 func (a *api) GetOnlineStatus(username string) (string, error) {
 	resp := &getOnlineStatusResp{}
-	if err := a.client.Get(fmt.Sprintf(getOnlineStatusUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getOnlineStatusUri, username), nil, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -403,7 +402,7 @@ func (a *api) GetOnlineStatuses(usernames ...string) (map[string]string, error) 
 
 	req := &batchGetOnlineStatusReq{Usernames: usernames}
 	resp := &batchGetOnlineStatusResp{}
-	if err := a.client.Post(batchGetOnlineStatusUri, req, resp); err != nil {
+	if err := a.client.Post(batchGetOnlineStatusUri, req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -419,13 +418,13 @@ func (a *api) GetOnlineStatuses(usernames ...string) (map[string]string, error) 
 
 // SetMutes 设置用户全局禁言
 func (a *api) SetMutes(mutes Mutes) error {
-	return a.client.Post(setMutesUri, mutes, nil)
+	return a.client.Post(setMutesUri, mutes, nil, nil)
 }
 
 // GetMutes 查询单个用户全局禁言
 func (a *api) GetMutes(username string) (*MutesRet, error) {
 	resp := &getMutesResp{}
-	if err := a.client.Get(fmt.Sprintf(getMutesUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getMutesUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -441,7 +440,7 @@ func (a *api) GetMutes(username string) (*MutesRet, error) {
 // FetchMutes 查询app下的所有全局禁言的用户
 func (a *api) FetchMutes(arg FetchMutesArg) (*FetchMutesRet, error) {
 	resp := &fetchMutesResp{}
-	if err := a.client.Get(fmt.Sprintf(fetchMutesUri, arg.PageNum, arg.PageSize), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(fetchMutesUri, arg.PageNum, arg.PageSize), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -455,7 +454,7 @@ func (a *api) FetchMutes(arg FetchMutesArg) (*FetchMutesRet, error) {
 // GetOfflineMsgCount 获取用户的离线消息数量。
 func (a *api) GetOfflineMsgCount(username string) (int, error) {
 	resp := &getOfflineMsgCountResp{}
-	if err := a.client.Get(fmt.Sprintf(getOfflineMsgCountUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getOfflineMsgCountUri, username), nil, nil, resp); err != nil {
 		return 0, err
 	}
 
@@ -465,7 +464,7 @@ func (a *api) GetOfflineMsgCount(username string) (int, error) {
 // GetOfflineMsgStatus 获取某条离线消息状态
 func (a *api) GetOfflineMsgStatus(username, msgID string) (string, error) {
 	resp := &getOfflineMsgStatusResp{}
-	if err := a.client.Get(fmt.Sprintf(getOfflineMsgStatusUri, username, msgID), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getOfflineMsgStatusUri, username, msgID), nil, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -475,7 +474,7 @@ func (a *api) GetOfflineMsgStatus(username, msgID string) (string, error) {
 // DeactivateUser 账号封禁
 func (a *api) DeactivateUser(username string) (*Entity, error) {
 	resp := &deactivateResp{}
-	if err := a.client.Post(fmt.Sprintf(deactivateUri, username), nil, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(deactivateUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -484,13 +483,13 @@ func (a *api) DeactivateUser(username string) (*Entity, error) {
 
 // ActivateUser 账号解禁
 func (a *api) ActivateUser(username string) error {
-	return a.client.Post(fmt.Sprintf(activateUri, username), nil, nil)
+	return a.client.Post(fmt.Sprintf(activateUri, username), nil, nil, nil)
 }
 
 // OfflineUser 强制下线
 func (a *api) OfflineUser(username string) (bool, error) {
 	resp := &offlineResp{}
-	if err := a.client.Get(fmt.Sprintf(offlineUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(offlineUri, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -523,18 +522,18 @@ func (a *api) toEntity(data map[string]interface{}) (*Entity, error) {
 
 // AddFriend 添加好友
 func (a *api) AddFriend(ownerUsername, friendUsername string) error {
-	return a.client.Post(fmt.Sprintf(addFriendUri, ownerUsername, friendUsername), nil, nil)
+	return a.client.Post(fmt.Sprintf(addFriendUri, ownerUsername, friendUsername), nil, nil, nil)
 }
 
 // RemoveFriend 移除好友
 func (a *api) RemoveFriend(ownerUsername, friendUsername string) error {
-	return a.client.Delete(fmt.Sprintf(removeFriendUri, ownerUsername, friendUsername), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeFriendUri, ownerUsername, friendUsername), nil, nil, nil)
 }
 
 // GetFriends 获取好友列表
 func (a *api) GetFriends(ownerUsername string) ([]string, error) {
 	resp := &getFriendsResp{}
-	if err := a.client.Get(fmt.Sprintf(getFriendsUri, ownerUsername), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getFriendsUri, ownerUsername), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -551,18 +550,18 @@ func (a *api) AddBlacklists(ownerUsername string, otherUsernames ...string) erro
 	}
 
 	req := &addBlacklistsReq{Usernames: otherUsernames}
-	return a.client.Post(fmt.Sprintf(addBlacklistsUri, ownerUsername), req, nil)
+	return a.client.Post(fmt.Sprintf(addBlacklistsUri, ownerUsername), req, nil, nil)
 }
 
 // RemoveBlacklist 移除黑名单
 func (a *api) RemoveBlacklist(ownerUsername, blackedUsername string) error {
-	return a.client.Delete(fmt.Sprintf(removeBlacklistUri, ownerUsername, blackedUsername), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeBlacklistUri, ownerUsername, blackedUsername), nil, nil, nil)
 }
 
 // GetBlacklists 获取黑名单
 func (a *api) GetBlacklists(ownerUsername string) ([]string, error) {
 	resp := &getBlacklistsResp{}
-	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, ownerUsername), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, ownerUsername), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -571,23 +570,17 @@ func (a *api) GetBlacklists(ownerUsername string) ([]string, error) {
 
 // SetMetadata 设置用户属性
 func (a *api) SetMetadata(username string, metadata map[string]string) error {
-	query := new(url.URL).Query()
+	var value = url.Values{}
 	for k, v := range metadata {
-		query.Add(k, v)
+		value.Add(k, v)
 	}
-
-	a.client.Use(func(r *http.Request) (*http.Response, error) {
-		r.Request.Header.Set(http.HeaderContentType, http.ContentTypeFormUrlEncoded)
-		return r.Next()
-	})
-
-	return a.client.Put(fmt.Sprintf(setMetadataUri, username), query.Encode(), nil)
+	return a.client.Put(fmt.Sprintf(setMetadataUri, username), value, "application/x-www-form-urlencoded", nil)
 }
 
 // GetMetadata 获取用户属
 func (a *api) GetMetadata(username string) (map[string]string, error) {
 	resp := &getMetadataResp{}
-	if err := a.client.Get(fmt.Sprintf(getMetadataUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getMetadataUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -609,7 +602,7 @@ func (a *api) BatchGetMetadata(properties []string, usernames ...string) (map[st
 
 	req := &batchGetMetadataReq{Properties: properties, Targets: usernames}
 	resp := &batchGetMetadataResp{}
-	if err := a.client.Post(batchGetMetadataUri, req, resp); err != nil {
+	if err := a.client.Post(batchGetMetadataUri, req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -619,7 +612,7 @@ func (a *api) BatchGetMetadata(properties []string, usernames ...string) (map[st
 // DeleteMetadata 删除用户属性
 func (a *api) DeleteMetadata(username string) (bool, error) {
 	resp := &deleteMetadataResp{}
-	if err := a.client.Delete(fmt.Sprintf(deleteMetadataUri, username), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(deleteMetadataUri, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -629,7 +622,7 @@ func (a *api) DeleteMetadata(username string) (bool, error) {
 // GetCapacity 获取用户属性总量大小
 func (a *api) GetCapacity() (int64, error) {
 	resp := &getCapacityResp{}
-	if err := a.client.Get(getCapacityUri, nil, resp); err != nil {
+	if err := a.client.Get(getCapacityUri, nil, nil, resp); err != nil {
 		return 0, err
 	}
 
@@ -639,13 +632,13 @@ func (a *api) GetCapacity() (int64, error) {
 // SetOfflinePushNickname 设置离线推送时显示的昵称
 func (a *api) SetOfflinePushNickname(username, nickname string) error {
 	req := &setOfflinePushNicknameReq{Nickname: nickname}
-	return a.client.Put(fmt.Sprintf(setOfflinePushNicknameUri, username), req, nil)
+	return a.client.Put(fmt.Sprintf(setOfflinePushNicknameUri, username), req, nil, nil)
 }
 
 // SetOfflinePushDisplayStyle 设置离线推送通知的展示方式
 func (a *api) SetOfflinePushDisplayStyle(username string, displayStyle int) error {
 	req := &setOfflinePushDisplayStyleReq{NotificationDisplayStyle: displayStyle}
-	return a.client.Put(fmt.Sprintf(setOfflinePushDisplayStyleUri, username), req, nil)
+	return a.client.Put(fmt.Sprintf(setOfflinePushDisplayStyleUri, username), req, nil, nil)
 }
 
 // 设置免打扰模式
@@ -655,7 +648,7 @@ func (a *api) setOfflinePushNoDisturbing(username string, enable bool, start, en
 		NotificationNoDisturbingStart: start,
 		NotificationNoDisturbingEnd:   end,
 	}
-	return a.client.Put(fmt.Sprintf(setOfflinePushNoDisturbingUri, username), req, nil)
+	return a.client.Put(fmt.Sprintf(setOfflinePushNoDisturbingUri, username), req, nil, nil)
 }
 
 // EnableOfflinePushNoDisturbing 启用免打扰模式
@@ -676,14 +669,14 @@ func (a *api) SetOfflinePushTargetedNoDisturbing(arg *SetOfflinePushTargetedNoDi
 		IgnoreInterval: arg.IgnoreInterval,
 		IgnoreDuration: arg.IgnoreDuration,
 	}
-	return a.client.Put(uri, req, nil)
+	return a.client.Put(uri, req, nil, nil)
 }
 
 // GetOfflinePushTargetedNoDisturbing 查询离线推送设置
 func (a *api) GetOfflinePushTargetedNoDisturbing(username string, toType, toKey string) (*NoDisturbing, error) {
 	uri := fmt.Sprintf(getOfflinePushTargetedNoDisturbingUri, username, toType, toKey)
 	resp := &getOfflinePushTargetedNoDisturbingResp{}
-	if err := a.client.Get(uri, nil, resp); err != nil {
+	if err := a.client.Get(uri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -693,13 +686,13 @@ func (a *api) GetOfflinePushTargetedNoDisturbing(username string, toType, toKey 
 // SetOfflinePushLanguage 设置推送翻译语言
 func (a *api) SetOfflinePushLanguage(username string, language string) error {
 	req := &setOfflinePushLanguageReq{TranslationLanguage: language}
-	return a.client.Put(fmt.Sprintf(setOfflinePushLanguageUri, username), req, nil)
+	return a.client.Put(fmt.Sprintf(setOfflinePushLanguageUri, username), req, nil, nil)
 }
 
 // GetOfflinePushLanguage 获取推送翻译语言
 func (a *api) GetOfflinePushLanguage(username string) (string, error) {
 	resp := &getOfflinePushLanguageResp{}
-	if err := a.client.Get(fmt.Sprintf(getOfflinePushLanguageUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getOfflinePushLanguageUri, username), nil, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -709,7 +702,7 @@ func (a *api) GetOfflinePushLanguage(username string) (string, error) {
 // GetJoinedChatrooms 获取用户加入的聊天室
 func (a *api) GetJoinedChatrooms(username string) ([]*JoinedChatroom, error) {
 	resp := &getJoinedChatroomsResp{}
-	if err := a.client.Get(fmt.Sprintf(getJoinedChatroomsUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getJoinedChatroomsUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -719,7 +712,7 @@ func (a *api) GetJoinedChatrooms(username string) ([]*JoinedChatroom, error) {
 // GetJoinedGroups 获取单个用户加入的所有群组
 func (a *api) GetJoinedGroups(username string) ([]*JoinedGroup, error) {
 	resp := &getJoinedGroupsResp{}
-	if err := a.client.Get(fmt.Sprintf(getJoinedGroupUri, username), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getJoinedGroupUri, username), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -730,7 +723,7 @@ func (a *api) GetJoinedGroups(username string) ([]*JoinedGroup, error) {
 func (a *api) FetchJoinedThreads(arg FetchJoinedThreadsArg) (*FetchJoinedThreadsRet, error) {
 	uri := fmt.Sprintf(fetchJoinedThreadsUri, arg.Username, arg.Limit, arg.Cursor, arg.Sort)
 	resp := &fetchJoinedThreadsResp{}
-	if err := a.client.Get(uri, nil, resp); err != nil {
+	if err := a.client.Get(uri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 

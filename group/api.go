@@ -323,7 +323,7 @@ func NewAPI(client core.Client) API {
 // GetGroup 获取群组详情
 func (a *api) GetGroup(id string) (*Group, error) {
 	resp := &getGroupResp{}
-	if err := a.client.Get(fmt.Sprintf(getGroupUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getGroupUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -333,7 +333,7 @@ func (a *api) GetGroup(id string) (*Group, error) {
 // CreateGroup 创建群组
 func (a *api) CreateGroup(arg *CreateGroupArg) (string, error) {
 	resp := &createGroupResp{}
-	if err := a.client.Post(createGroupUri, arg, resp); err != nil {
+	if err := a.client.Post(createGroupUri, arg, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -343,7 +343,7 @@ func (a *api) CreateGroup(arg *CreateGroupArg) (string, error) {
 // UpdateGroup 修改群组信息
 func (a *api) UpdateGroup(arg *UpdateGroupArg) (*UpdateGroupRet, error) {
 	resp := &updateGroupResp{}
-	if err := a.client.Put(fmt.Sprintf(updateGroupUri, arg.ID), arg, resp); err != nil {
+	if err := a.client.Put(fmt.Sprintf(updateGroupUri, arg.ID), arg, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -352,13 +352,13 @@ func (a *api) UpdateGroup(arg *UpdateGroupArg) (*UpdateGroupRet, error) {
 
 // DeleteGroup 删除群组
 func (a *api) DeleteGroup(id string) error {
-	return a.client.Delete(fmt.Sprintf(deleteGroupUri, id), nil, nil)
+	return a.client.Delete(fmt.Sprintf(deleteGroupUri, id), nil, nil, nil)
 }
 
 // GetAllGroups 获取 App 中所有的群组
 func (a *api) GetAllGroups() ([]*ListedGroup, error) {
 	resp := &getAllGroupsResp{}
-	if err := a.client.Get(getAllGroupsUri, nil, resp); err != nil {
+	if err := a.client.Get(getAllGroupsUri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -368,7 +368,7 @@ func (a *api) GetAllGroups() ([]*ListedGroup, error) {
 // FetchGroups 分页拉取群组
 func (a *api) FetchGroups(arg FetchGroupsArg) (*FetchGroupsRet, error) {
 	resp := &fetchGroupsResp{}
-	if err := a.client.Get(fmt.Sprintf(fetchGroupsUri, arg.Limit, arg.Cursor), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(fetchGroupsUri, arg.Limit, arg.Cursor), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -382,7 +382,7 @@ func (a *api) FetchGroups(arg FetchGroupsArg) (*FetchGroupsRet, error) {
 // GetAnnouncement 获取群组公告
 func (a *api) GetAnnouncement(id string) (string, error) {
 	resp := &getAnnouncementResp{}
-	if err := a.client.Get(fmt.Sprintf(getAnnouncementUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getAnnouncementUri, id), nil, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -392,13 +392,13 @@ func (a *api) GetAnnouncement(id string) (string, error) {
 // UpdateAnnouncement 修改聊天室公告
 func (a *api) UpdateAnnouncement(id, announcement string) error {
 	req := &updateAnnouncementReq{Announcement: announcement}
-	return a.client.Post(fmt.Sprintf(updateAnnouncementUri, id), req, nil)
+	return a.client.Post(fmt.Sprintf(updateAnnouncementUri, id), req, nil, nil)
 }
 
 // GetAllShareFiles 获取群组共享文件
 func (a *api) GetAllShareFiles(id string) ([]*ShareFile, error) {
 	resp := &getAllShareFilesResp{}
-	if err := a.client.Get(fmt.Sprintf(getAllShareFilesUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getAllShareFilesUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -409,7 +409,7 @@ func (a *api) GetAllShareFiles(id string) ([]*ShareFile, error) {
 func (a *api) FetchShareFiles(arg FetchShareFilesArg) (*FetchShareFilesRet, error) {
 	uri := fmt.Sprintf(fetchShareFilesUri, arg.ID, arg.PageNum, arg.PageSize)
 	resp := &fetchShareFilesResp{}
-	if err := a.client.Get(uri, nil, resp); err != nil {
+	if err := a.client.Get(uri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -427,7 +427,7 @@ func (a *api) UploadShareFile() (*ShareFile, error) {
 // GetShareFile 下载群组共享文件
 func (a *api) GetShareFile(groupID, fileID string) (*ShareFile, error) {
 	resp := &getShareFileResp{}
-	if err := a.client.Get(fmt.Sprintf(getShareFileUri, groupID, fileID), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getShareFileUri, groupID, fileID), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -436,13 +436,13 @@ func (a *api) GetShareFile(groupID, fileID string) (*ShareFile, error) {
 
 // DeleteShareFile 删除群组共享文件
 func (a *api) DeleteShareFile(groupID, fileID string) error {
-	return a.client.Delete(fmt.Sprintf(deleteShareFileUri, groupID, fileID), nil, nil)
+	return a.client.Delete(fmt.Sprintf(deleteShareFileUri, groupID, fileID), nil, nil, nil)
 }
 
 // FetchMembers 分页获取群组成员
 func (a *api) FetchMembers(arg FetchMembersArg) (*FetchMembersRet, error) {
 	resp := &fetchMembersResp{}
-	if err := a.client.Get(fmt.Sprintf(fetchMembersUri, arg.ID, arg.PageNum, arg.PageSize), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(fetchMembersUri, arg.ID, arg.PageNum, arg.PageSize), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -465,7 +465,7 @@ func (a *api) FetchMembers(arg FetchMembersArg) (*FetchMembersRet, error) {
 
 // AddMember 添加单个群组成员
 func (a *api) AddMember(id, username string) error {
-	return a.client.Post(fmt.Sprintf(addMemberUri, id, username), nil, nil)
+	return a.client.Post(fmt.Sprintf(addMemberUri, id, username), nil, nil, nil)
 }
 
 // AddMembers 批量添加群组成员
@@ -479,7 +479,7 @@ func (a *api) AddMembers(id string, usernames ...string) ([]string, error) {
 
 	req := &addMembersReq{Usernames: usernames}
 	resp := &addMembersResp{}
-	if err := a.client.Post(fmt.Sprintf(addMembersUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addMembersUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -507,13 +507,13 @@ func (a *api) RemoveMembers(id string, usernames ...string) ([]*ActionResult, er
 	uri := fmt.Sprintf(removeMembersUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeMembersResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeMemberResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -523,7 +523,7 @@ func (a *api) RemoveMembers(id string, usernames ...string) ([]*ActionResult, er
 // GetAdmins 获取群管理员列表
 func (a *api) GetAdmins(id string) ([]string, error) {
 	resp := &getAdminResp{}
-	if err := a.client.Get(fmt.Sprintf(getAdminsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getAdminsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -533,24 +533,24 @@ func (a *api) GetAdmins(id string) ([]string, error) {
 // AddAdmin 添加群管理员
 func (a *api) AddAdmin(id, username string) error {
 	req := &addAdminReq{NewAdmin: username}
-	return a.client.Post(fmt.Sprintf(addAdminUri, id), req, nil)
+	return a.client.Post(fmt.Sprintf(addAdminUri, id), req, nil, nil)
 }
 
 // RemoveAdmin 移除群管理员
 func (a *api) RemoveAdmin(id, username string) error {
-	return a.client.Delete(fmt.Sprintf(removeAdminUri, id, username), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeAdminUri, id, username), nil, nil, nil)
 }
 
 // TransferGroup 转让群组
 func (a *api) TransferGroup(id string, username string) error {
 	req := &transferGroupReq{NewOwner: username}
-	return a.client.Put(fmt.Sprintf(transferGroupUri, id), req, nil)
+	return a.client.Put(fmt.Sprintf(transferGroupUri, id), req, nil, nil)
 }
 
 // GetBlacklists 查询群组黑名单
 func (a *api) GetBlacklists(id string) ([]string, error) {
 	resp := &getBlacklistsResp{}
-	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -559,7 +559,7 @@ func (a *api) GetBlacklists(id string) ([]string, error) {
 
 // AddBlacklist 添加单个用户至群组黑名单
 func (a *api) AddBlacklist(id, username string) error {
-	return a.client.Post(fmt.Sprintf(addBlacklistUri, id, username), nil, nil)
+	return a.client.Post(fmt.Sprintf(addBlacklistUri, id, username), nil, nil, nil)
 }
 
 // AddBlacklists 批量添加用户至群组黑名单
@@ -573,7 +573,7 @@ func (a *api) AddBlacklists(id string, usernames ...string) ([]*ActionResult, er
 
 	req := &addBlacklistsReq{Usernames: usernames}
 	resp := &addBlacklistsResp{}
-	if err := a.client.Post(fmt.Sprintf(addBlacklistsUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addBlacklistsUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -582,7 +582,7 @@ func (a *api) AddBlacklists(id string, usernames ...string) ([]*ActionResult, er
 
 // RemoveBlacklist 从群组黑名单移除单个用户
 func (a *api) RemoveBlacklist(id, username string) error {
-	return a.client.Delete(fmt.Sprintf(removeBlacklistUri, id, username), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeBlacklistUri, id, username), nil, nil, nil)
 }
 
 // RemoveBlacklists 从群组黑名单批量移除用户
@@ -597,13 +597,13 @@ func (a *api) RemoveBlacklists(id string, usernames ...string) ([]*ActionResult,
 	uri := fmt.Sprintf(removeBlacklistsUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeBlacklistsResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeBlacklistResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -613,7 +613,7 @@ func (a *api) RemoveBlacklists(id string, usernames ...string) ([]*ActionResult,
 // GetWhitelists 查询聊天室白名单
 func (a *api) GetWhitelists(id string) ([]string, error) {
 	resp := &getWhitelistsResp{}
-	if err := a.client.Get(fmt.Sprintf(getWhitelistsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getWhitelistsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -622,7 +622,7 @@ func (a *api) GetWhitelists(id string) ([]string, error) {
 
 // AddWhitelist 添加单个用户至聊天室黑名单
 func (a *api) AddWhitelist(id, username string) error {
-	return a.client.Post(fmt.Sprintf(addWhitelistUri, id, username), nil, nil)
+	return a.client.Post(fmt.Sprintf(addWhitelistUri, id, username), nil, nil, nil)
 }
 
 // AddWhitelists 批量添加用户至群组白名单
@@ -636,7 +636,7 @@ func (a *api) AddWhitelists(id string, usernames ...string) ([]*ActionResult, er
 
 	req := &addWhitelistsReq{Usernames: usernames}
 	resp := &addWhitelistsResp{}
-	if err := a.client.Post(fmt.Sprintf(addWhitelistsUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addWhitelistsUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -661,13 +661,13 @@ func (a *api) RemoveWhitelists(id string, usernames ...string) ([]*ActionResult,
 	uri := fmt.Sprintf(removeWhitelistsUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeWhitelistsResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeWhitelistResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -677,7 +677,7 @@ func (a *api) RemoveWhitelists(id string, usernames ...string) ([]*ActionResult,
 // GetMutes 获取禁言列表
 func (a *api) GetMutes(id string) ([]*Mute, error) {
 	resp := &getMutesResp{}
-	if err := a.client.Get(fmt.Sprintf(getMutesUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getMutesUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -694,7 +694,7 @@ func (a *api) AddMute(id string, duration int64, username string) error {
 func (a *api) AddMutes(id string, duration int64, usernames ...string) ([]*AddMuteResult, error) {
 	req := &addMutesReq{MuteDuration: duration, Usernames: usernames}
 	resp := &addMutesResp{}
-	if err := a.client.Post(fmt.Sprintf(addMutesUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addMutesUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -710,7 +710,7 @@ func (a *api) RemoveMute(id string, username string) error {
 // RemoveMutes 批量解除成员禁言
 func (a *api) RemoveMutes(id string, usernames ...string) ([]*RemoveMuteResult, error) {
 	resp := &removeMutesResp{}
-	if err := a.client.Delete(fmt.Sprintf(removeMutesUri, id, strings.Join(usernames, ",")), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(removeMutesUri, id, strings.Join(usernames, ",")), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -719,18 +719,18 @@ func (a *api) RemoveMutes(id string, usernames ...string) ([]*RemoveMuteResult, 
 
 // AddAllMutes 禁言聊天室全体成员
 func (a *api) AddAllMutes(id string) error {
-	return a.client.Post(fmt.Sprintf(addAllMutesUri, id), nil, nil)
+	return a.client.Post(fmt.Sprintf(addAllMutesUri, id), nil, nil, nil)
 }
 
 // RemoveAllMutes 解除聊天室全员禁言
 func (a *api) RemoveAllMutes(id string) error {
-	return a.client.Delete(fmt.Sprintf(removeAllMutesUri, id), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeAllMutesUri, id), nil, nil, nil)
 }
 
 // CreateThread 创建子区
 func (a *api) CreateThread(arg CreateThreadArg) (string, error) {
 	resp := &createThreadResp{}
-	if err := a.client.Post(createThreadUri, arg, resp); err != nil {
+	if err := a.client.Post(createThreadUri, arg, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -740,19 +740,19 @@ func (a *api) CreateThread(arg CreateThreadArg) (string, error) {
 // UpdateThread 修改子区
 func (a *api) UpdateThread(id, name string) error {
 	req := &updateThreadReq{Name: name}
-	return a.client.Put(fmt.Sprintf(updateThreadUri, id), req, nil)
+	return a.client.Put(fmt.Sprintf(updateThreadUri, id), req, nil, nil)
 }
 
 // DeleteThread 删除子区
 func (a *api) DeleteThread(id string) error {
-	return a.client.Put(fmt.Sprintf(deleteThreadUri, id), nil, nil)
+	return a.client.Put(fmt.Sprintf(deleteThreadUri, id), nil, nil, nil)
 }
 
 // FetchThreads 分页拉取所有的子区
 func (a *api) FetchThreads(arg FetchThreadsArg) (*FetchThreadsRet, error) {
 	uri := fmt.Sprintf(fetchThreadsUri, arg.Limit, arg.Cursor, arg.Sort)
 	resp := &fetchThreadsResp{}
-	if err := a.client.Get(uri, nil, resp); err != nil {
+	if err := a.client.Get(uri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -772,7 +772,7 @@ func (a *api) FetchThreads(arg FetchThreadsArg) (*FetchThreadsRet, error) {
 func (a *api) FetchGroupUserThreads(arg FetchGroupUserThreadsArg) (*FetchGroupUserThreadsRet, error) {
 	uri := fmt.Sprintf(fetchGroupUserThreadsUri, arg.GroupID, arg.Username, arg.Limit, arg.Cursor, arg.Sort)
 	resp := &fetchGroupUserThreadsResp{}
-	if err := a.client.Get(uri, nil, resp); err != nil {
+	if err := a.client.Get(uri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 

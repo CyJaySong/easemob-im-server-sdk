@@ -270,7 +270,7 @@ func (a *api) AddSuperAdmin(username string) (bool, error) {
 	req := &addSuperAdminReq{SuperAdmin: username}
 	resp := &addSuperAdminResp{}
 
-	if err := a.client.Post(addSuperAdminUri, req, resp); err != nil {
+	if err := a.client.Post(addSuperAdminUri, req, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -279,13 +279,13 @@ func (a *api) AddSuperAdmin(username string) (bool, error) {
 
 // RevokeSuperAdmin 撤销超级管理员
 func (a *api) RevokeSuperAdmin(username string) error {
-	return a.client.Delete(fmt.Sprintf(revokeSuperAdminUri, username), nil, nil)
+	return a.client.Delete(fmt.Sprintf(revokeSuperAdminUri, username), nil, nil, nil)
 }
 
 // FetchSuperAdmins 分页获取超级管理员列表
 func (a *api) FetchSuperAdmins(arg FetchSuperAdminsArg) (*FetchSuperAdminsRet, error) {
 	resp := &fetchSuperAdminsResp{}
-	if err := a.client.Get(fmt.Sprintf(fetchSuperAdminsUri, arg.PageNum, arg.PageSize), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(fetchSuperAdminsUri, arg.PageNum, arg.PageSize), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -298,7 +298,7 @@ func (a *api) FetchSuperAdmins(arg FetchSuperAdminsArg) (*FetchSuperAdminsRet, e
 // GetAllChatrooms 获取app中所有的聊天室
 func (a *api) GetAllChatrooms() ([]*ListedChatroom, error) {
 	resp := &getAllChatroomsResp{}
-	if err := a.client.Get(getAllChatroomsUri, nil, resp); err != nil {
+	if err := a.client.Get(getAllChatroomsUri, nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -315,7 +315,7 @@ func (a *api) GetChatrooms(id ...string) ([]*Chatroom, error) {
 	}
 
 	resp := &getChatroomsResp{}
-	if err := a.client.Get(fmt.Sprintf(getChatroomsUri, strings.Join(id, ",")), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getChatroomsUri, strings.Join(id, ",")), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -325,7 +325,7 @@ func (a *api) GetChatrooms(id ...string) ([]*Chatroom, error) {
 // CreateChatroom 创建聊天室
 func (a *api) CreateChatroom(arg *CreateChatRoomArg) (string, error) {
 	resp := &createChatRoomResp{}
-	if err := a.client.Post(createChatroomUri, arg, resp); err != nil {
+	if err := a.client.Post(createChatroomUri, arg, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -335,7 +335,7 @@ func (a *api) CreateChatroom(arg *CreateChatRoomArg) (string, error) {
 // UpdateChatroom 修改聊天室
 func (a *api) UpdateChatroom(arg UpdateChatroomArg) (*UpdateChatroomRet, error) {
 	resp := &UpdateChatroomRet{}
-	if err := a.client.Put(fmt.Sprintf(updateChatroomUri, arg.ID), arg, resp); err != nil {
+	if err := a.client.Put(fmt.Sprintf(updateChatroomUri, arg.ID), arg, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -345,7 +345,7 @@ func (a *api) UpdateChatroom(arg UpdateChatroomArg) (*UpdateChatroomRet, error) 
 // DeleteChatroom 删除聊天室
 func (a *api) DeleteChatroom(id string) (bool, error) {
 	resp := &deleteChatroomResp{}
-	if err := a.client.Delete(fmt.Sprintf(deleteChatroomUri, id), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(deleteChatroomUri, id), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -355,7 +355,7 @@ func (a *api) DeleteChatroom(id string) (bool, error) {
 // GetAnnouncement 获取聊天室公告
 func (a *api) GetAnnouncement(id string) (string, error) {
 	resp := &getAnnouncementResp{}
-	if err := a.client.Get(fmt.Sprintf(getAnnouncementUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getAnnouncementUri, id), nil, nil, resp); err != nil {
 		return "", err
 	}
 
@@ -365,13 +365,13 @@ func (a *api) GetAnnouncement(id string) (string, error) {
 // UpdateAnnouncement 修改聊天室公告
 func (a *api) UpdateAnnouncement(id, announcement string) error {
 	req := &updateAnnouncementReq{Announcement: announcement}
-	return a.client.Post(fmt.Sprintf(updateAnnouncementUri, id), req, nil)
+	return a.client.Post(fmt.Sprintf(updateAnnouncementUri, id), req, nil, nil)
 }
 
 // FetchMembers 分页获取聊天室成员
 func (a *api) FetchMembers(arg FetchMembersArg) (*FetchMembersRet, error) {
 	resp := &fetchMembersResp{}
-	if err := a.client.Get(fmt.Sprintf(fetchMembersUri, arg.ID, arg.PageNum, arg.PageSize), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(fetchMembersUri, arg.ID, arg.PageNum, arg.PageSize), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -395,7 +395,7 @@ func (a *api) FetchMembers(arg FetchMembersArg) (*FetchMembersRet, error) {
 // AddMember 添加单个聊天室成员
 func (a *api) AddMember(id, username string) (bool, error) {
 	resp := &addMemberResp{}
-	if err := a.client.Post(fmt.Sprintf(addMemberUri, id, username), nil, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addMemberUri, id, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -413,7 +413,7 @@ func (a *api) AddMembers(id string, usernames ...string) ([]string, error) {
 
 	req := &addMembersReq{Usernames: usernames}
 	resp := &addMembersResp{}
-	if err := a.client.Post(fmt.Sprintf(addMembersUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addMembersUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -442,13 +442,13 @@ func (a *api) RemoveMembers(id string, usernames ...string) ([]*ActionResult, er
 	uri := fmt.Sprintf(removeMembersUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeMembersResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeMemberResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -458,7 +458,7 @@ func (a *api) RemoveMembers(id string, usernames ...string) ([]*ActionResult, er
 // GetAdmins 获取聊天室管理员列表
 func (a *api) GetAdmins(id string) ([]string, error) {
 	resp := &getAdminResp{}
-	if err := a.client.Get(fmt.Sprintf(getAdminsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getAdminsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -469,7 +469,7 @@ func (a *api) GetAdmins(id string) ([]string, error) {
 func (a *api) AddAdmin(id, username string) (bool, error) {
 	req := &addAdminReq{NewAdmin: username}
 	resp := &addAdminResp{}
-	if err := a.client.Post(fmt.Sprintf(addAdminUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addAdminUri, id), req, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -479,7 +479,7 @@ func (a *api) AddAdmin(id, username string) (bool, error) {
 // RemoveAdmin 移除聊天室管理员
 func (a *api) RemoveAdmin(id, username string) (bool, error) {
 	resp := &removeAdminResp{}
-	if err := a.client.Delete(fmt.Sprintf(removeAdminUri, id, username), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(removeAdminUri, id, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -489,7 +489,7 @@ func (a *api) RemoveAdmin(id, username string) (bool, error) {
 // GetBlacklists 查询聊天室黑名单
 func (a *api) GetBlacklists(id string) ([]string, error) {
 	resp := &getBlacklistsResp{}
-	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getBlacklistsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -499,7 +499,7 @@ func (a *api) GetBlacklists(id string) ([]string, error) {
 // AddBlacklist 添加单个用户至聊天室黑名单
 func (a *api) AddBlacklist(id, username string) (bool, error) {
 	resp := &addBlacklistResp{}
-	if err := a.client.Post(fmt.Sprintf(addBlacklistUri, id, username), nil, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addBlacklistUri, id, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -517,7 +517,7 @@ func (a *api) AddBlacklists(id string, usernames ...string) ([]*ActionResult, er
 
 	req := &addBlacklistsReq{Usernames: usernames}
 	resp := &addBlacklistsResp{}
-	if err := a.client.Post(fmt.Sprintf(addBlacklistsUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addBlacklistsUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -527,7 +527,7 @@ func (a *api) AddBlacklists(id string, usernames ...string) ([]*ActionResult, er
 // RemoveBlacklist 从聊天室黑名单移除单个用户
 func (a *api) RemoveBlacklist(id, username string) (bool, error) {
 	resp := &removeBlacklistResp{}
-	if err := a.client.Delete(fmt.Sprintf(removeBlacklistUri, id, username), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(removeBlacklistUri, id, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -546,13 +546,13 @@ func (a *api) RemoveBlacklists(id string, usernames ...string) ([]*ActionResult,
 	uri := fmt.Sprintf(removeBlacklistsUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeBlacklistsResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeBlacklistResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -562,7 +562,7 @@ func (a *api) RemoveBlacklists(id string, usernames ...string) ([]*ActionResult,
 // GetWhitelists 查询聊天室白名单
 func (a *api) GetWhitelists(id string) ([]string, error) {
 	resp := &getWhitelistsResp{}
-	if err := a.client.Get(fmt.Sprintf(getWhitelistsUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getWhitelistsUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -572,7 +572,7 @@ func (a *api) GetWhitelists(id string) ([]string, error) {
 // AddWhitelist 添加单个用户至聊天室黑名单
 func (a *api) AddWhitelist(id, username string) (bool, error) {
 	resp := &addBlacklistResp{}
-	if err := a.client.Post(fmt.Sprintf(addWhitelistUri, id, username), nil, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addWhitelistUri, id, username), nil, nil, resp); err != nil {
 		return false, err
 	}
 
@@ -590,7 +590,7 @@ func (a *api) AddWhitelists(id string, usernames ...string) ([]*ActionResult, er
 
 	req := &addWhitelistsReq{Usernames: usernames}
 	resp := &addWhitelistsResp{}
-	if err := a.client.Post(fmt.Sprintf(addWhitelistsUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addWhitelistsUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -619,13 +619,13 @@ func (a *api) RemoveWhitelists(id string, usernames ...string) ([]*ActionResult,
 	uri := fmt.Sprintf(removeWhitelistsUri, id, strings.Join(usernames, ","))
 	if len(usernames) > 1 {
 		resp := &removeWhitelistsResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return resp.Data, nil
 	} else {
 		resp := &removeWhitelistResp{}
-		if err := a.client.Delete(uri, nil, resp); err != nil {
+		if err := a.client.Delete(uri, nil, nil, resp); err != nil {
 			return nil, err
 		}
 		return []*ActionResult{resp.Data}, nil
@@ -635,7 +635,7 @@ func (a *api) RemoveWhitelists(id string, usernames ...string) ([]*ActionResult,
 // GetMutes 获取禁言列表
 func (a *api) GetMutes(id string) ([]*Mute, error) {
 	resp := &getMutesResp{}
-	if err := a.client.Get(fmt.Sprintf(getMutesUri, id), nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getMutesUri, id), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -656,7 +656,7 @@ func (a *api) AddMute(id string, duration int64, username string) (bool, error) 
 func (a *api) AddMutes(id string, duration int64, usernames ...string) ([]*AddMuteResult, error) {
 	req := &addMutesReq{MuteDuration: duration, Usernames: usernames}
 	resp := &addMutesResp{}
-	if err := a.client.Post(fmt.Sprintf(addMutesUri, id), req, resp); err != nil {
+	if err := a.client.Post(fmt.Sprintf(addMutesUri, id), req, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -676,7 +676,7 @@ func (a *api) RemoveMute(id string, username string) (bool, error) {
 // RemoveMutes 解除聊天室禁言成员
 func (a *api) RemoveMutes(id string, usernames ...string) ([]*RemoveMuteResult, error) {
 	resp := &removeMutesResp{}
-	if err := a.client.Delete(fmt.Sprintf(removeMutesUri, id, strings.Join(usernames, ",")), nil, resp); err != nil {
+	if err := a.client.Delete(fmt.Sprintf(removeMutesUri, id, strings.Join(usernames, ",")), nil, nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -685,10 +685,10 @@ func (a *api) RemoveMutes(id string, usernames ...string) ([]*RemoveMuteResult, 
 
 // AddAllMutes 禁言聊天室全体成员
 func (a *api) AddAllMutes(id string) error {
-	return a.client.Post(fmt.Sprintf(addAllMutesUri, id), nil, nil)
+	return a.client.Post(fmt.Sprintf(addAllMutesUri, id), nil, nil, nil)
 }
 
 // RemoveAllMutes 解除聊天室全员禁言
 func (a *api) RemoveAllMutes(id string) error {
-	return a.client.Delete(fmt.Sprintf(removeAllMutesUri, id), nil, nil)
+	return a.client.Delete(fmt.Sprintf(removeAllMutesUri, id), nil, nil, nil)
 }

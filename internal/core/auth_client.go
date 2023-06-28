@@ -42,11 +42,11 @@ func NewAuthClient(opts *Options) Client {
 				req.TTL = defaultTokenTTL
 			}
 
-			if err := c.Post(defaultAuthUri, req, resp); err != nil {
+			if err := c.Post(defaultAuthUri, req, nil, resp); err != nil {
 				return nil, err
 			}
 
-			c.client.SetBearerToken(resp.AccessToken)
+			c.client.SetCommonBearerAuthToken(resp.AccessToken)
 
 			return nil, nil
 		})
