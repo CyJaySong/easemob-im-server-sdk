@@ -105,8 +105,7 @@ func (c *client) request(method string, uri string, data interface{}, resp inter
 			if resp == nil || reflect.ValueOf(resp).IsNil() {
 				return nil
 			}
-
-			return res.Scan(resp)
+			return res.ScanBody(resp)
 		}
 
 		if res.Response.StatusCode == nethttp.StatusUnauthorized {
@@ -119,7 +118,7 @@ func (c *client) request(method string, uri string, data interface{}, resp inter
 		}
 
 		errResp := &errorResp{}
-		if err = res.Scan(errResp); err != nil {
+		if err = res.ScanBody(errResp); err != nil {
 			return err
 		}
 
