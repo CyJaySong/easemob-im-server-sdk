@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dobyte/easemob-im-server-sdk/internal/core"
-	"github.com/dobyte/http"
+	"github.com/dobyte/easemob-im-server-sdk/internal/core/http"
 	"net/url"
 	"regexp"
 	"strconv"

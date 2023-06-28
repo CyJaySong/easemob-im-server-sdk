@@ -2,7 +2,7 @@ package core
 
 import (
 	"errors"
-	"github.com/dobyte/http"
+	"github.com/dobyte/easemob-im-server-sdk/internal/core/http"
 	"log"
 	nethttp "net/http"
 	"reflect"
