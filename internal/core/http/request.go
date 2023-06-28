@@ -12,10 +12,18 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
+	"fmt"
 	"github.com/dobyte/easemob-im-server-sdk/internal/core/http/internal"
+	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -30,120 +38,171 @@ const (
 	MethodTrace   = http.MethodTrace
 )
 
-type request struct {
-	executor
+const fileUploadingKey = "@file:"
+
+type Request struct {
+	client        *Client
+	retryCount    int
+	retryInterval time.Duration
+	Request       *http.Request
 }
 
-type RequestOptions struct {
-	Headers map[string]string
-	Cookies map[string]string
+func NewRequest(c *Client) *Request {
+	return &Request{
+		client:        c,
+		retryCount:    c.retryCount,
+		retryInterval: c.retryInterval,
+	}
 }
 
-func newRequest(client *Client) *request {
-	return &request{executor{client: client}}
+func (r *Request) Next() (*Response, error) {
+	if v := r.Request.Context().Value(middlewareKey); v != nil {
+		if m, ok := v.(*middleware); ok {
+			return m.Next()
+		}
+	}
+	return r.call()
 }
 
-// send a http request.
-func (r *request) request(method, url string, data interface{}, opts ...*RequestOptions) (*Response, error) {
-	req, err := r.prepare(method, url, data, opts...)
+func (r *Request) request(method, url string, data ...interface{}) (resp *Response, err error) {
+	r.Request, err = r.prepare(method, url, data...)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.call(req)
-}
-
-// build a http request.
-func (r *request) prepare(method, url string, data interface{}, opts ...*RequestOptions) (req *http.Request, err error) {
-	var (
-		buf     []byte
-		body    *bytes.Buffer
-		headers = r.client.GetHeaders()
-		cookies = r.client.GetCookies()
-	)
-
-	method, url = strings.ToUpper(method), r.makeUrl(url)
-
-	if len(opts) > 0 && opts[0] != nil {
-		for key, value := range opts[0].Headers {
-			headers[key] = value
-		}
-
-		for key, value := range opts[0].Cookies {
-			cookies[key] = value
-		}
+	if count := len(r.client.middlewares); count > 0 {
+		handlers := make([]MiddlewareFunc, 0, count+1)
+		handlers = append(handlers, r.client.middlewares...)
+		handlers = append(handlers, func(r *Request) (*Response, error) {
+			return r.call()
+		})
+		r.Request = r.Request.WithContext(context.WithValue(r.Request.Context(), middlewareKey, &middleware{
+			req:      r,
+			handlers: handlers,
+			index:    -1,
+		}))
+		resp, err = r.Next()
+	} else {
+		resp, err = r.call()
 	}
 
-	switch contentType := headers[HeaderContentType]; contentType {
-	case ContentTypeJson, ContentTypeXml, ContentTypeFormUrlEncoded:
-		switch v := data.(type) {
-		case nil:
-			// ignore
+	return resp, err
+}
+
+// prepare build a http request.
+func (r *Request) prepare(method, url string, data ...interface{}) (req *http.Request, err error) {
+	method = strings.ToUpper(method)
+	url = r.client.baseUrl + url
+
+	var params string
+	if len(data) > 0 {
+		switch data[0].(type) {
 		case string:
-			buf = []byte(v)
+			params = data[0].(string)
 		case []byte:
-			buf = v[:]
+			params = string(data[0].([]byte))
 		default:
-			switch contentType {
+			switch r.client.headers[HeaderContentType] {
 			case ContentTypeJson:
-				buf, err = json.Marshal(data)
-				if err != nil {
-					return
+				if b, err := json.Marshal(data[0]); err != nil {
+					return nil, err
+				} else {
+					params = string(b)
 				}
 			case ContentTypeXml:
-				buf, err = xml.Marshal(data)
-				if err != nil {
-					return
+				if b, err := xml.Marshal(data[0]); err != nil {
+					return nil, err
+				} else {
+					params = string(b)
 				}
-			case ContentTypeFormUrlEncoded:
-				buf = []byte(internal.BuildParams(data))
-			}
-		}
-
-		body = bytes.NewBuffer(buf)
-	default:
-		switch v := data.(type) {
-		case nil:
-			body = bytes.NewBuffer(buf)
-		case string:
-			buf = []byte(v)
-		case []byte:
-			buf = v
-		default:
-			switch method {
-			case MethodGet, MethodPost:
-				buf = []byte(internal.BuildParams(data))
-			}
-		}
-
-		if len(buf) > 0 {
-			if (buf[0] == '[' || buf[0] == '{') && json.Valid(buf) {
-				headers[HeaderContentType] = ContentTypeJson
-				body = bytes.NewBuffer(buf)
-			} else if matched, _ := regexp.Match(`^[\w\[\]]+=.+`, buf); matched {
-				if method != MethodGet {
-					headers[HeaderContentType] = ContentTypeFormUrlEncoded
-					body = bytes.NewBuffer(buf)
-				}
-			} else {
-				body = bytes.NewBuffer(buf)
+			default:
+				params = internal.BuildParams(data[0])
 			}
 		}
 	}
 
 	if method == MethodGet {
-		if _, ok := headers[HeaderContentType]; !ok && len(buf) > 0 {
-			if strings.Contains(url, "?") {
-				url = url + "&" + string(buf)
-			} else {
-				url = url + "?" + string(buf)
+		buffer := bytes.NewBuffer(nil)
+
+		if params != "" {
+			switch r.client.headers[HeaderContentType] {
+			case ContentTypeJson, ContentTypeXml:
+				buffer = bytes.NewBuffer([]byte(params))
+			default:
+				if strings.Contains(url, "?") {
+					url = url + "&" + params
+				} else {
+					url = url + "?" + params
+				}
 			}
 		}
-	}
 
-	req, err = http.NewRequest(method, url, body)
-	if err != nil {
-		return
+		if req, err = http.NewRequest(method, url, buffer); err != nil {
+			return nil, err
+		}
+	} else {
+		if strings.Contains(params, fileUploadingKey) {
+			var (
+				buffer = bytes.NewBuffer(nil)
+				writer = multipart.NewWriter(buffer)
+			)
+
+			for _, item := range strings.Split(params, "&") {
+				array := strings.Split(item, "=")
+				if len(array[1]) > 6 && strings.Compare(array[1][0:6], fileUploadingKey) == 0 {
+					path := array[1][6:]
+					if !internal.Exists(path) {
+						return nil, errors.New(fmt.Sprintf(`"%s" does not exist`, path))
+					}
+					if file, err := writer.CreateFormFile(array[0], filepath.Base(path)); err == nil {
+						if f, err := os.Open(path); err == nil {
+							if _, err = io.Copy(file, f); err != nil {
+								if err := f.Close(); err != nil {
+									log.Printf(`%+v`, err)
+								}
+								return nil, err
+							}
+							if err := f.Close(); err != nil {
+								log.Printf(`%+v`, err)
+							}
+						} else {
+							return nil, err
+						}
+					} else {
+						return nil, err
+					}
+				} else {
+					if err = writer.WriteField(array[0], array[1]); err != nil {
+						return nil, err
+					}
+				}
+			}
+
+			if err = writer.Close(); err != nil {
+				return nil, err
+			}
+
+			if req, err = http.NewRequest(method, url, buffer); err != nil {
+				return nil, err
+			} else {
+				req.Header.Set(HeaderContentType, writer.FormDataContentType())
+			}
+		} else {
+			paramBytes := []byte(params)
+			if req, err = http.NewRequest(method, url, bytes.NewReader(paramBytes)); err != nil {
+				return nil, err
+			} else {
+				if v, ok := r.client.headers[HeaderContentType]; ok {
+					req.Header.Set(HeaderContentType, v)
+				} else if len(paramBytes) > 0 {
+					if (paramBytes[0] == '[' || paramBytes[0] == '{') && json.Valid(paramBytes) {
+						req.Header.Set(HeaderContentType, ContentTypeJson)
+					} else if matched, _ := regexp.Match(`^[\w\[\]]+=.+`, paramBytes); matched {
+						req.Header.Set(HeaderContentType, ContentTypeFormUrlEncoded)
+					}
+				}
+			}
+		}
 	}
 
 	if r.client.ctx != nil {
@@ -152,26 +211,53 @@ func (r *request) prepare(method, url string, data interface{}, opts ...*Request
 		req = req.WithContext(context.Background())
 	}
 
-	for key, value := range headers {
-		switch key {
-		case HeaderCookie:
-			// ignore
-		default:
-			req.Header.Set(key, value)
+	if len(r.client.headers) > 0 {
+		for key, value := range r.client.headers {
+			if key != "" {
+				req.Header.Set(key, value)
+			}
 		}
 	}
 
-	if len(cookies) > 0 {
-		slice := make([]string, 0, len(cookies))
+	if len(r.client.cookies) > 0 {
+		var cookies = make([]string, 0)
 		for key, value := range r.client.cookies {
-			slice = append(slice, key+"="+value)
+			if key != "" {
+				cookies = append(cookies, key+"="+value)
+			}
 		}
-		req.Header.Set(HeaderCookie, strings.Join(slice, ";"))
+		req.Header.Set(HeaderCookie, strings.Join(cookies, ";"))
 	}
 
 	if host := req.Header.Get(HeaderHost); host != "" {
 		req.Host = host
 	}
 
-	return
+	return req, nil
+}
+
+// call nitiate an HTTP request and return the response data.
+func (r *Request) call() (resp *Response, err error) {
+	resp = &Response{Request: r.Request}
+
+	for {
+		if resp.Response, err = r.client.Do(r.Request); err != nil {
+			if resp.Response != nil {
+				if err := resp.Response.Body.Close(); err != nil {
+					log.Printf(`%+v`, err)
+				}
+			}
+
+			if r.retryCount > 0 {
+				r.retryCount--
+				time.Sleep(r.retryInterval)
+			} else {
+				break
+			}
+		} else {
+			break
+		}
+	}
+
+	return resp, err
 }

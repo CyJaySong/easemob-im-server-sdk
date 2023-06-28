@@ -9,7 +9,6 @@ package internal
 
 import (
 	"encoding/json"
-	"github.com/dobyte/easemob-im-server-sdk/internal/core/http/internal/xconv"
 	"net/url"
 	"strings"
 )
@@ -34,9 +33,9 @@ func BuildParams(params interface{}) string {
 
 	if params != nil {
 		if b, err := json.Marshal(params); err != nil {
-			return xconv.String(params)
+			return String(params)
 		} else if err = json.Unmarshal(b, &m); err != nil {
-			return xconv.String(params)
+			return String(params)
 		}
 	} else {
 		return ""
@@ -45,11 +44,11 @@ func BuildParams(params interface{}) string {
 	urlEncode := true
 
 	if len(m) == 0 {
-		return xconv.String(params)
+		return String(params)
 	}
 
 	for k, v := range m {
-		if strings.Contains(k, fileUploadingKey) || strings.Contains(xconv.String(v), fileUploadingKey) {
+		if strings.Contains(k, fileUploadingKey) || strings.Contains(String(v), fileUploadingKey) {
 			urlEncode = false
 			break
 		}
@@ -64,7 +63,7 @@ func BuildParams(params interface{}) string {
 		if len(str) > 0 {
 			str += "&"
 		}
-		s = xconv.String(v)
+		s = String(v)
 		if urlEncode && len(s) > len(fileUploadingKey) && strings.Compare(s[0:len(fileUploadingKey)], fileUploadingKey) != 0 {
 			s = url.QueryEscape(s)
 		}

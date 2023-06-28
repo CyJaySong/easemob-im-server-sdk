@@ -5,7 +5,7 @@
  * @Desc: TODO
  */
 
-package stream
+package internal
 
 import (
 	"bytes"

@@ -5,7 +5,7 @@
  * @Desc: TODO
  */
 
-package xfile
+package internal
 
 import (
 	"io"
@@ -19,14 +19,6 @@ func Exists(path string) bool {
 		return true
 	}
 	return false
-}
-
-// Base returns the last element of path.
-// Trailing path separators are removed before extracting the last element.
-// If the path is empty, Base returns ".".
-// If the path consists entirely of separators, Base returns a single separator.
-func Base(path string) string {
-	return filepath.Base(path)
 }
 
 // SaveToFile save data to file.

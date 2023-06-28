@@ -8,7 +8,7 @@
 package http
 
 import (
-	"github.com/dobyte/easemob-im-server-sdk/internal/core/http/internal/xconv"
+	"github.com/dobyte/easemob-im-server-sdk/internal/core/http/internal"
 	"io"
 	"net/http"
 	"sync"
@@ -17,57 +17,58 @@ import (
 type Response struct {
 	*http.Response
 	Request *http.Request
-
-	err      error
-	body     []byte
-	bodyOnce sync.Once
-
-	cookies     map[string]string
-	cookiesOnce sync.Once
-
-	closeErr  error
-	closeOnce sync.Once
+	body    []byte
+	cookies map[string]string
+	mu      sync.Mutex
 }
 
-// ReadBody retrieves and returns the response content as []byte.
-func (r *Response) ReadBody() ([]byte, error) {
-	r.bodyOnce.Do(func() {
-		r.body, r.err = io.ReadAll(r.Response.Body)
-		_ = r.Close()
-	})
+// ReadBytes retrieves and returns the response content as []byte.
+func (r *Response) ReadBytes() []byte {
+	if r == nil || r.Response == nil {
+		return []byte{}
+	}
 
-	return r.body[:], r.err
+	if r.body == nil {
+		var err error
+		r.mu.Lock()
+		defer r.mu.Unlock()
+		defer r.Close()
+		if r.body, err = io.ReadAll(r.Response.Body); err != nil {
+			return nil
+		}
+	}
+
+	return r.body
 }
 
-// ScanBody convert the response into a complex data structure.
-func (r *Response) ScanBody(pointer interface{}) error {
-	if pointer == nil {
-		_ = r.Close()
-		return nil
-	}
+// ReadString retrieves and returns the response content as string.
+func (r *Response) ReadString() string {
+	return internal.UnsafeBytesToString(r.ReadBytes())
+}
 
-	buf, err := r.ReadBody()
-	if err != nil {
-		return err
-	}
-
-	return xconv.Scan(buf, pointer)
+// Scan convert the response into a complex data structure.
+func (r *Response) Scan(any interface{}) error {
+	return internal.Scan(r.ReadBytes(), any)
 }
 
 // Close closes the response when it will never be used.
 func (r *Response) Close() error {
-	r.closeOnce.Do(func() {
-		r.Response.Close = true
-		r.closeErr = r.Response.Body.Close()
-	})
-
-	return r.closeErr
+	if r == nil || r.Response == nil || r.Response.Close {
+		return nil
+	}
+	r.Response.Close = true
+	return r.Response.Body.Close()
 }
 
 // HasHeader Determine if a header exists in the cache.
-func (r *Response) HasHeader(key string) (has bool) {
-	_, has = r.Header[key]
-	return
+func (r *Response) HasHeader(key string) bool {
+	for k, _ := range r.Header {
+		if k == key {
+			return true
+		}
+	}
+
+	return false
 }
 
 // GetHeader Retrieve header's value from the response.
@@ -75,31 +76,45 @@ func (r *Response) GetHeader(key string) string {
 	return r.Header.Get(key)
 }
 
-// GetHeaders Retrieve all header's value from the response.
-func (r *Response) GetHeaders() http.Header {
-	return r.Header
+// GetHeader Retrieve all header's value from the response.
+func (r *Response) GetHeaders() map[string]interface{} {
+	headers := make(map[string]interface{})
+	for k, v := range r.Header {
+		if len(v) > 1 {
+			headers[k] = v
+		} else {
+			headers[k] = v[0]
+		}
+	}
+
+	return headers
 }
 
 // HasCookie Determine if a cookie exists in the cache.
-func (r *Response) HasCookie(key string) (has bool) {
-	_, has = r.GetCookies()[key]
-	return
+func (r *Response) HasCookie(key string) bool {
+	if r.cookies == nil {
+		r.cookies = r.GetCookies()
+	}
+	_, ok := r.cookies[key]
+
+	return ok
 }
 
 // GetCookie Retrieve cookie's value from the response.
 func (r *Response) GetCookie(key string) string {
-	return r.GetCookies()[key]
+	if r.cookies == nil {
+		r.cookies = r.GetCookies()
+	}
+	return r.cookies[key]
 }
 
 // GetCookies Retrieve all cookie's value from the response.
 func (r *Response) GetCookies() map[string]string {
-	r.cookiesOnce.Do(func() {
-		cookies := r.Cookies()
-		r.cookies = make(map[string]string, len(cookies))
-		for _, cookie := range cookies {
-			r.cookies[cookie.Name] = cookie.Value
+	cookies := make(map[string]string)
+	if r != nil && r.Response != nil {
+		for _, cookie := range r.Cookies() {
+			cookies[cookie.Name] = cookie.Value
 		}
-	})
-
-	return r.cookies
+	}
+	return cookies
 }

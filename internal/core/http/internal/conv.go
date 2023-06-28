@@ -5,7 +5,7 @@
  * @Desc: TODO
  */
 
-package xconv
+package internal
 
 import (
 	"encoding"
@@ -112,7 +112,7 @@ func String(any interface{}) string {
 func Scan(b []byte, any interface{}) error {
 	switch v := any.(type) {
 	case nil:
-		return fmt.Errorf("http: Scan(nil)")
+		return fmt.Errorf("cache: Scan(nil)")
 	case *string:
 		*v = String(b)
 		return nil
