@@ -42,7 +42,7 @@ func NewAPI(client core.Client) API {
 // GetTemplate 查询离线推送模板
 func (a *api) GetTemplate(name string) (*Template, error) {
 	resp := &getTemplateResp{}
-	if err := a.client.Get(fmt.Sprintf(getTemplateUri, name), nil, nil, resp); err != nil {
+	if err := a.client.Get(fmt.Sprintf(getTemplateUri, name), nil, resp); err != nil {
 		return nil, err
 	}
 
@@ -52,10 +52,10 @@ func (a *api) GetTemplate(name string) (*Template, error) {
 // CreateTemplate 创建离线推送模板
 func (a *api) CreateTemplate(name, titlePattern, contentPattern string) error {
 	req := &createTemplateReq{Name: name, TitlePattern: titlePattern, ContentPattern: contentPattern}
-	return a.client.Post(createTemplateUri, req, nil, nil)
+	return a.client.Post(createTemplateUri, req, nil)
 }
 
 // DeleteTemplate 删除离线推送模板
 func (a *api) DeleteTemplate(name string) error {
-	return a.client.Delete(fmt.Sprintf(deleteTemplateUri, name), nil, nil, nil)
+	return a.client.Delete(fmt.Sprintf(deleteTemplateUri, name), nil, nil)
 }

@@ -23,15 +23,15 @@ type Client interface {
 	// BaseUrl 获取基础url
 	BaseUrl() string
 	// Get GET请求
-	Get(uri string, data interface{}, dataContentType interface{}, resp interface{}) error
+	Get(uri string, data interface{}, resp interface{}) error
 	// Post POST请求
-	Post(uri string, data interface{}, dataContentType interface{}, resp interface{}) error
+	Post(uri string, data interface{}, resp interface{}) error
 	// Put PUT请求
-	Put(uri string, data interface{}, dataContentType interface{}, resp interface{}) error
+	Put(uri string, data interface{}, resp interface{}) error
 	// Patch PATCH请求
-	Patch(uri string, data interface{}, dataContentType interface{}, resp interface{}) error
+	Patch(uri string, data interface{}, resp interface{}) error
 	// Delete DELETE请求
-	Delete(uri string, data interface{}, dataContentType interface{}, resp interface{}) error
+	Delete(uri string, data interface{}, resp interface{}) error
 }
 
 type client struct {
@@ -61,44 +61,38 @@ func (c *client) BaseUrl() string {
 }
 
 // Get GET请求
-func (c *client) Get(uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
-	return c.request(http.MethodGet, uri, data, dataContentType, resp)
+func (c *client) Get(uri string, data interface{}, resp interface{}) error {
+	return c.request(http.MethodGet, uri, data, resp)
 }
 
 // Post POST请求
-func (c *client) Post(uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
-	return c.request(http.MethodPost, uri, data, dataContentType, resp)
+func (c *client) Post(uri string, data interface{}, resp interface{}) error {
+	return c.request(http.MethodPost, uri, data, resp)
 }
 
 // Put PUT请求
-func (c *client) Put(uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
-	return c.request(http.MethodPut, uri, data, dataContentType, resp)
+func (c *client) Put(uri string, data interface{}, resp interface{}) error {
+	return c.request(http.MethodPut, uri, data, resp)
 }
 
 // Patch PATCH请求
-func (c *client) Patch(uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
-	return c.request(http.MethodPatch, uri, data, dataContentType, resp)
+func (c *client) Patch(uri string, data interface{}, resp interface{}) error {
+	return c.request(http.MethodPatch, uri, data, resp)
 }
 
 // Delete DELETE请求
-func (c *client) Delete(uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
-	return c.request(http.MethodDelete, uri, data, dataContentType, resp)
+func (c *client) Delete(uri string, data interface{}, resp interface{}) error {
+	return c.request(http.MethodDelete, uri, data, resp)
 }
 
 // HTTP请求
-func (c *client) request(method string, uri string, data interface{}, dataContentType interface{}, resp interface{}) error {
+func (c *client) request(method string, uri string, data interface{}, resp interface{}) error {
 	for i := 0; i < 2; i++ {
 		var r = c.client.R()
-		if data != nil && dataContentType == "application/x-www-form-urlencoded" {
+		if data != nil && method == http.MethodPut && strings.HasPrefix(uri, "/metadata/user/") {
 			r.SetFormDataFromValues(data.(url.Values))
 		} else if data != nil {
 			r.SetBodyJsonMarshal(data)
-		}
-		switch v := dataContentType.(type) {
-		case string:
-			if len(v) > 0 {
-				r.SetContentType(v)
-			}
 		}
 		res, err := r.Send(method, uri)
 		if err != nil {

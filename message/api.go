@@ -88,7 +88,7 @@ func (a *api) Send(msg *Message) (map[string]string, error) {
 		uri = sendChatroomMsgUri
 	}
 
-	if err = a.client.Post(uri, req, nil, resp); err != nil {
+	if err = a.client.Post(uri, req, resp); err != nil {
 		return nil, err
 	}
 
